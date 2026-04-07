@@ -41,13 +41,16 @@ export default async function handler(req, res) {
         const statsData = await stats.json();
 
         statsData.items.forEach(v => {
-            allVideos.push({
-                id: v.id,
-                title: v.snippet.title,
-                views: parseInt(v.statistics.viewCount),
-                publishedAt: v.snippet.publishedAt
-            });
+    // проверяем, есть ли в названии русские буквы
+    if (/[а-яА-ЯЁё]/.test(v.snippet.title)) {
+        allVideos.push({
+            id: v.id,
+            title: v.snippet.title,
+            views: parseInt(v.statistics.viewCount),
+            publishedAt: v.snippet.publishedAt
         });
+    }
+});
     }
 
     const map = {};
