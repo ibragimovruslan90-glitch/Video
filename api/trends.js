@@ -1,10 +1,16 @@
 export default async function handler(req, res) {
     const API_KEY = process.env.YOUTUBE_API_KEY;
 
+    // Расширенный список русских запросов для Roblox
     const queries = [
-        "roblox",
-        "roblox челлендж",
-        "roblox хоррор"
+        "роблокс челлендж",
+        "роблокс хоррор",
+        "роблокс карта",
+        "роблокс прохождение",
+        "роблокс новая игра",
+        "роблокс мини игра",
+        "роблокс секрет",
+        "роблокс приключение"
     ];
 
     const stopWords = [
@@ -39,7 +45,7 @@ export default async function handler(req, res) {
         const statsData = await stats.json();
 
         statsData.items.forEach(v => {
-            // проверяем, есть ли в названии кириллица
+            // оставляем только русские видео
             if (/[а-яА-ЯЁё]/.test(v.snippet.title)) {
                 allVideos.push({
                     id: v.id,
@@ -57,7 +63,6 @@ export default async function handler(req, res) {
         const hours = (Date.now() - new Date(v.publishedAt)) / 3600000;
         const score = v.views / Math.max(hours, 1);
 
-        // Только русские слова
         extractCandidates(v.title).forEach(name => {
             if (!map[name]) map[name] = { score: 0, videos: [] };
 
