@@ -93,10 +93,15 @@ export default async function handler(req, res) {
                 titles: info.examples
             }));
 
-        res.status(200).json({
-            success: true,
-            top
-        });
+        // ... (весь предыдущий код расчетов)
+
+// В конце функции handler:
+res.status(200).json({
+    success: true,
+    debug, // Добавляем обратно для совместимости с вашим фронтендом
+    top
+});
+
 
     } catch (err) {
         res.status(500).json({ error: err.message, debug });
