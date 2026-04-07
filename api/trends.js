@@ -28,8 +28,8 @@ export default async function handler(req, res) {
 
     for (let q of queries) {
         const search = await fetch(
-            `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(q)}&maxResults=10&type=video&order=date&key=${API_KEY}`
-        );
+  `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(q)}&maxResults=10&type=video&order=date&regionCode=RU&relevanceLanguage=ru&key=${API_KEY}`
+);
 
         const data = await search.json();
         const ids = data.items.map(i => i.id.videoId).join(",");
