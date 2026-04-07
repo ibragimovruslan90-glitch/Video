@@ -30,6 +30,8 @@ export default async function handler(req, res) {
         const data = await search.json();
         const ids = data.items.map(i => i.id.videoId).join(",");
 
+        if (!ids) continue; // если видео не найдено
+
         const stats = await fetch(
           `https://www.googleapis.com/youtube/v3/videos?part=statistics,snippet&id=${ids}&key=${API_KEY}`
         );
@@ -37,7 +39,7 @@ export default async function handler(req, res) {
         const statsData = await stats.json();
 
         statsData.items.forEach(v => {
-            // Фильтруем только русские видео
+            // проверяем, есть ли в названии кириллица
             if (/[а-яА-ЯЁё]/.test(v.snippet.title)) {
                 allVideos.push({
                     id: v.id,
@@ -55,6 +57,7 @@ export default async function handler(req, res) {
         const hours = (Date.now() - new Date(v.publishedAt)) / 3600000;
         const score = v.views / Math.max(hours, 1);
 
+        // Только русские слова
         extractCandidates(v.title).forEach(name => {
             if (!map[name]) map[name] = { score: 0, videos: [] };
 
