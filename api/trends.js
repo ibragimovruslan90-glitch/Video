@@ -1,16 +1,10 @@
 export default async function handler(req, res) {
     const API_KEY = process.env.YOUTUBE_API_KEY;
 
-    // Расширенный список русских запросов для Roblox
     const queries = [
-        "роблокс челлендж",
-        "роблокс хоррор",
-        "роблокс карта",
-        "роблокс прохождение",
-        "роблокс новая игра",
-        "роблокс мини игра",
-        "роблокс секрет",
-        "роблокс приключение"
+        "roblox",
+        "roblox челлендж",
+        "roblox хоррор"
     ];
 
     const stopWords = [
@@ -36,8 +30,6 @@ export default async function handler(req, res) {
         const data = await search.json();
         const ids = data.items.map(i => i.id.videoId).join(",");
 
-        if (!ids) continue; // если видео не найдено
-
         const stats = await fetch(
           `https://www.googleapis.com/youtube/v3/videos?part=statistics,snippet&id=${ids}&key=${API_KEY}`
         );
@@ -45,7 +37,7 @@ export default async function handler(req, res) {
         const statsData = await stats.json();
 
         statsData.items.forEach(v => {
-            // оставляем только русские видео
+            // Фильтруем только русские видео
             if (/[а-яА-ЯЁё]/.test(v.snippet.title)) {
                 allVideos.push({
                     id: v.id,
