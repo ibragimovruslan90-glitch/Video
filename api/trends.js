@@ -1,7 +1,6 @@
 export default async function handler(req, res) {
     const API_KEY = process.env.YOUTUBE_API_KEY;
 
-    // Популярные русские ключевые слова для Roblox
     const queries = [
         "роблокс",
         "роблокс челлендж",
@@ -18,7 +17,6 @@ export default async function handler(req, res) {
         "roblox","роблокс","игра","карта"
     ];
 
-    // Извлекаем только слова с кириллицей
     function extractCandidates(title) {
         return title
             .replace(/[^\w\s]/g, "")
@@ -27,25 +25,33 @@ export default async function handler(req, res) {
     }
 
     let allVideos = [];
+    let debug = []; // массив для вывода на страницу
+
+    debug.push("=== Начало дебага ===");
 
     for (let q of queries) {
         const search = await fetch(
             `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(q)}&maxResults=10&type=video&order=date&regionCode=RU&relevanceLanguage=ru&key=${API_KEY}`
         );
-
         const data = await search.json();
-        const ids = data.items.map(i => i.id.videoId).join(",");
 
+        debug.push(`Запрос: "${q}"`);
+        debug.push(`Поиск вернул items: ${data.items?.length || 0}`);
+        data.items?.forEach((item, i) => {
+            debug.push(`${i+1}. ${item.snippet.title} (${item.id.videoId})`);
+        });
+
+        const ids = data.items?.map(i => i.id.videoId).join(",");
         if (!ids) continue;
 
         const stats = await fetch(
             `https://www.googleapis.com/youtube/v3/videos?part=statistics,snippet&id=${ids}&key=${API_KEY}`
         );
-
         const statsData = await stats.json();
 
-        statsData.items.forEach(v => {
-            // Берём все видео, независимо от языка
+        debug.push(`Статистика видео items: ${statsData.items?.length || 0}`);
+        statsData.items?.forEach((v, i) => {
+            debug.push(`${i+1}. ${v.snippet.title} | views: ${v.statistics.viewCount}`);
             allVideos.push({
                 id: v.id,
                 title: v.snippet.title,
@@ -55,16 +61,16 @@ export default async function handler(req, res) {
         });
     }
 
-    const map = {};
+    debug.push(`Всего видео в allVideos: ${allVideos.length}`);
 
+    const map = {};
     allVideos.forEach(v => {
         const hours = (Date.now() - new Date(v.publishedAt)) / 3600000;
         const score = v.views / Math.max(hours, 1);
 
-        // Только русские слова формируют топ
         extractCandidates(v.title).forEach(name => {
+            debug.push(`Слово для топа: ${name}`);
             if (!map[name]) map[name] = { score: 0, videos: [] };
-
             map[name].score += score;
             map[name].videos.push({
                 title: v.title,
@@ -75,9 +81,16 @@ export default async function handler(req, res) {
         });
     });
 
-    const result = Object.entries(map)
+    const top = Object.entries(map)
         .sort((a, b) => b[1].score - a[1].score)
         .slice(0, 5);
 
-    res.status(200).json(result);
+    debug.push("=== Топ 5 слов ===");
+    top.forEach(([word, info]) => debug.push(`${word} — ${Math.round(info.score)}`));
+
+    // Возвращаем и дебаг, и топ
+    res.status(200).json({
+        debug,
+        top
+    });
 }
