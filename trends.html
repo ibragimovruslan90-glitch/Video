@@ -1,41 +1,57 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Roblox Trends</title>
+    <title>Тренды Roblox</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f9f9f9; }
+        pre { background: #222; color: #0f0; padding: 10px; overflow-x: auto; }
+        h2 { margin-top: 20px; }
+        ul { line-height: 1.5; }
+        a { color: #06f; text-decoration: none; }
+    </style>
 </head>
 <body>
+    <h1>Тренды Roblox (русский сегмент)</h1>
+    <button id="loadBtn">Загрузить тренды</button>
 
-<h1>🔥 Топ карт Roblox (YouTube)</h1>
-<button onclick="load()">Анализировать</button>
+    <h2>Дебаг / шаги выполнения</h2>
+    <pre id="debug"></pre>
 
-<div id="results"></div>
+    <h2>Топ слов</h2>
+    <ul id="topList"></ul>
 
-<script>
-async function load() {
-    const res = await fetch('/api/trends');
-    const data = await res.json();
+    <script>
+        document.getElementById('loadBtn').addEventListener('click', async () => {
+            const debugEl = document.getElementById('debug');
+            const topEl = document.getElementById('topList');
+            debugEl.textContent = "Загрузка...";
+            topEl.innerHTML = "";
 
-    const container = document.getElementById('results');
-    container.innerHTML = "";
+            try {
+                const res = await fetch('/api/trends');
+                const data = await res.json();
 
-    data.forEach(([name, info]) => {
-        const div = document.createElement('div');
-        div.innerHTML = `<h2>${name} — 🔥 ${Math.round(info.score)}</h2>`;
+                // Выводим дебаг на страницу
+                debugEl.textContent = data.debug.join("\n");
 
-        info.videos.slice(0, 3).forEach(v => {
-            const p = document.createElement('p');
-            p.innerHTML = `
-                <a href="${v.url}" target="_blank">${v.title}</a><br>
-                👁 ${v.views} | ⏱ ${v.hours.toFixed(1)}ч
-            `;
-            div.appendChild(p);
+                // Выводим топ
+                if (data.top.length === 0) {
+                    topEl.innerHTML = "<li>Топ пока пустой</li>";
+                } else {
+                    data.top.forEach(([word, info]) => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `<strong>${word}</strong> — ${Math.round(info.score)}<br>`;
+                        info.videos.forEach(v => {
+                            li.innerHTML += `<a href="${v.url}" target="_blank">${v.title}</a> | 👁 ${v.views} | ⏱ ${v.hours.toFixed(1)}ч<br>`;
+                        });
+                        topEl.appendChild(li);
+                    });
+                }
+            } catch (err) {
+                debugEl.textContent = "Ошибка при загрузке данных:\n" + err;
+            }
         });
-
-        container.appendChild(div);
-    });
-}
-</script>
-
+    </script>
 </body>
 </html>
