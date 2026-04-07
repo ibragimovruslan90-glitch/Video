@@ -9,7 +9,9 @@ export default async function handler(req, res) {
         "роблокс хоррор",
         "роблокс приключение",
         "роблокс мини игра",
-        "роблокс секрет"
+        "роблокс секрет",
+        "roblox русский",
+        "roblox россия"
     ];
 
     const stopWords = [
@@ -25,13 +27,13 @@ export default async function handler(req, res) {
     }
 
     let allVideos = [];
-    let debug = []; // массив для вывода на страницу
+    let debug = [];
 
     debug.push("=== Начало дебага ===");
 
     for (let q of queries) {
         const search = await fetch(
-            `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(q)}&maxResults=10&type=video&order=date&regionCode=RU&relevanceLanguage=ru&key=${API_KEY}`
+            `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(q)}&maxResults=10&type=video&order=date&regionCode=RU&key=${API_KEY}`
         );
         const data = await search.json();
 
@@ -56,7 +58,7 @@ export default async function handler(req, res) {
                 id: v.id,
                 title: v.snippet.title,
                 views: parseInt(v.statistics.viewCount),
-                publishedAt: v.snippet.publishedAt
+                publishedAt: v.publishedAt
             });
         });
     }
@@ -88,7 +90,6 @@ export default async function handler(req, res) {
     debug.push("=== Топ 5 слов ===");
     top.forEach(([word, info]) => debug.push(`${word} — ${Math.round(info.score)}`));
 
-    // Возвращаем и дебаг, и топ
     res.status(200).json({
         debug,
         top
