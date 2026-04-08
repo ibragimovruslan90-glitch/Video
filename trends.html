@@ -4,19 +4,25 @@
 <meta charset="UTF-8">
 <title>Топ видео Roblox</title>
 <style>
+    *, *::before, *::after {
+        box-sizing: border-box;
+    }
+
     body {
         font-family: Arial, sans-serif;
         margin: 10px;
         background: #f9f9f9;
         color: #333;
     }
+
     h1 {
         font-size: 24px;
         margin-bottom: 15px;
     }
+
     button {
         width: 100%;
-        padding: 18px;
+        padding: 20px;
         font-size: 20px;
         cursor: pointer;
         border-radius: 8px;
@@ -25,9 +31,11 @@
         color: white;
         margin-bottom: 20px;
     }
+
     button:hover {
         background-color: #e03e00;
     }
+
     ul { 
         list-style: none; 
         padding: 0; 
@@ -36,8 +44,8 @@
         flex-direction: column;
         gap: 15px;
         width: 100%;
-        box-sizing: border-box;
     }
+
     li {
         background: #fff;
         padding: 12px;
@@ -48,32 +56,38 @@
         gap: 12px;
         flex-wrap: wrap;
         width: 100%;
-        box-sizing: border-box;
     }
+
     li img {
-        width: 240px; /* увеличенное превью */
+        width: 320px; /* увеличенное превью */
         max-width: 100%;
         height: auto;
         border-radius: 6px;
         flex-shrink: 0;
     }
+
     li .info {
-        flex: 1 1 200px;
+        flex: 1 1 auto;
+        min-width: 0;
     }
+
     li .place {
         font-weight: bold;
-        font-size: 20px;
-        width: 35px;
+        font-size: 22px;
+        width: 40px;
         flex-shrink: 0;
     }
+
     a {
         color: #06f;
         text-decoration: none;
         font-weight: bold;
     }
+
     a:hover {
         text-decoration: underline;
     }
+
     pre {
         background: #222;
         color: #0f0;
