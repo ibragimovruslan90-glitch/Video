@@ -3,9 +3,7 @@ export default async function handler(req, res) {
 
     // 🔥 ВСТАВЬ СЮДА ID КАНАЛОВ
     const channels = [
-        "UCxxxxxxxxxxxx1",
-        "UCxxxxxxxxxxxx2",
-        "UCxxxxxxxxxxxx3"
+        "UC6HKWohA11bBbyob7ieP-0g"
     ];
 
     const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
