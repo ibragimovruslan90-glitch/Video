@@ -2,9 +2,9 @@ export default async function handler(req, res) {
     const API_KEY = process.env.YOUTUBE_API_KEY;
 
     const channels = [
-    "UC6HKWohA11bBbyob7ieP-0g", // твой первый
-    "UCHVY_-jY-FayjszyX1nlGtQ"
-];
+        "UC6HKWohA11bBbyob7ieP-0g", // твой первый
+        "UCHVY_-jY-FayjszyX1nlGtQ"
+    ];
 
     const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
@@ -42,15 +42,11 @@ export default async function handler(req, res) {
 
                     const title = v.snippet.title.toLowerCase();
 
-                    // 🎮 только Roblox
-                    //if (!title.includes("roblox") && !title.includes("роблокс")) return;
-
                     // 🚫 убираем Shorts вручную
                     if (title.includes("#shorts") || title.includes("shorts")) return;
 
                     const views = parseInt(v.statistics.viewCount || 0);
                     const hours = (Date.now() - published) / 3600000;
-
                     const speed = views / Math.max(hours, 1);
 
                     allVideos.push({
@@ -59,7 +55,8 @@ export default async function handler(req, res) {
                         views,
                         hours,
                         speed,
-                        url: `https://youtube.com/watch?v=${v.id}`
+                        url: `https://youtube.com/watch?v=${v.id}`,
+                        thumbnail: v.snippet.thumbnails?.medium?.url || "" // Добавляем превью
                     });
                 });
             }
