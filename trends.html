@@ -54,20 +54,16 @@ document.getElementById('loadBtn').addEventListener('click', async () => {
         }
 
         // Вывод топа
-        data.top.forEach(item => {
-            const li = document.createElement('li');
+        data.top.forEach(v => {
+    const li = document.createElement('li');
 
-            li.innerHTML = `
-                <strong>${item.name}</strong> — 🔥 ${item.popularityScore}
-                (упоминаний: ${item.mentions})<br>
-            `;
+    li.innerHTML = `
+        <a href="${v.url}" target="_blank">${v.title}</a><br>
+        👁 ${v.views} | ⏱ ${v.hours.toFixed(1)}ч | ⚡ ${Math.round(v.speed)} /час
+    `;
 
-            item.titles.forEach(title => {
-                li.innerHTML += `📹 ${title}<br>`;
-            });
-
-            topEl.appendChild(li);
-        });
+    topEl.appendChild(li);
+});
 
     } catch (err) {
         debugEl.textContent = "Ошибка:\n" + err;
