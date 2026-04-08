@@ -43,7 +43,7 @@ export default async function handler(req, res) {
                     const title = v.snippet.title.toLowerCase();
 
                     // 🎮 только Roblox
-                    if (!title.includes("roblox") && !title.includes("роблокс")) return;
+                    //if (!title.includes("roblox") && !title.includes("роблокс")) return;
 
                     // 🚫 убираем Shorts вручную
                     if (title.includes("#shorts") || title.includes("shorts")) return;
