@@ -4,54 +4,76 @@
     <meta charset="UTF-8">
     <title>Тренды Roblox</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; background: #f9f9f9; }
-        pre { background: #222; color: #0f0; padding: 10px; overflow-x: auto; }
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            background: #f9f9f9; 
+        }
+        pre { 
+            background: #222; 
+            color: #0f0; 
+            padding: 10px; 
+            overflow-x: auto; 
+        }
         h2 { margin-top: 20px; }
-        ul { line-height: 1.5; }
+        ul { line-height: 1.6; }
         a { color: #06f; text-decoration: none; }
     </style>
 </head>
 <body>
-    <h1>Тренды Roblox (русский сегмент)</h1>
-    <button id="loadBtn">Загрузить тренды</button>
 
-    <h2>Дебаг / шаги выполнения</h2>
-    <pre id="debug"></pre>
+<h1>🔥 Тренды Roblox (YouTube RU)</h1>
 
-    <h2>Топ слов</h2>
-    <ul id="topList"></ul>
+<button id="loadBtn">Загрузить тренды</button>
 
-    <script>
-        document.getElementById('loadBtn').addEventListener('click', async () => {
-            const debugEl = document.getElementById('debug');
-            const topEl = document.getElementById('topList');
-            debugEl.textContent = "Загрузка...";
-            topEl.innerHTML = "";
+<h2>📊 Дебаг</h2>
+<pre id="debug"></pre>
 
-            try {
-                const res = await fetch('/api/trends');
-                const data = await res.json();
+<h2>🏆 Топ карт / тем</h2>
+<ul id="topList"></ul>
 
-                // Выводим дебаг на страницу
-                debugEl.textContent = data.debug.join("\n");
+<script>
+document.getElementById('loadBtn').addEventListener('click', async () => {
+    const debugEl = document.getElementById('debug');
+    const topEl = document.getElementById('topList');
 
-                // Выводим топ
-                if (data.top.length === 0) {
-                    topEl.innerHTML = "<li>Топ пока пустой</li>";
-                } else {
-                    data.top.forEach(([word, info]) => {
-                        const li = document.createElement('li');
-                        li.innerHTML = `<strong>${word}</strong> — ${Math.round(info.score)}<br>`;
-                        info.videos.forEach(v => {
-                            li.innerHTML += `<a href="${v.url}" target="_blank">${v.title}</a> | 👁 ${v.views} | ⏱ ${v.hours.toFixed(1)}ч<br>`;
-                        });
-                        topEl.appendChild(li);
-                    });
-                }
-            } catch (err) {
-                debugEl.textContent = "Ошибка при загрузке данных:\n" + err;
-            }
+    debugEl.textContent = "Загрузка...";
+    topEl.innerHTML = "";
+
+    try {
+        const res = await fetch('/api/trends');
+        const data = await res.json();
+
+        // Дебаг
+        debugEl.textContent = (data.debug || []).join("\n");
+
+        // Проверка
+        if (!data.top || data.top.length === 0) {
+            topEl.innerHTML = "<li>❌ Ничего не найдено</li>";
+            return;
+        }
+
+        // Вывод топа
+        data.top.forEach(item => {
+            const li = document.createElement('li');
+
+            li.innerHTML = `
+                <strong>${item.name}</strong> — 🔥 ${item.popularityScore}
+                (упоминаний: ${item.mentions})<br>
+            `;
+
+            item.titles.forEach(title => {
+                li.innerHTML += `📹 ${title}<br>`;
+            });
+
+            topEl.appendChild(li);
         });
-    </script>
+
+    } catch (err) {
+        debugEl.textContent = "Ошибка:\n" + err;
+    }
+});
+</script>
+
 </body>
 </html>
