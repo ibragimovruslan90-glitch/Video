@@ -1,37 +1,89 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <title>Тренды Roblox</title>
-    <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            margin: 20px; 
-            background: #f9f9f9; 
-        }
-        pre { 
-            background: #222; 
-            color: #0f0; 
-            padding: 10px; 
-            overflow-x: auto; 
-        }
-        h2 { margin-top: 20px; }
-        ul { line-height: 1.6; padding-left: 20px; }
-        a { color: #06f; text-decoration: none; }
-        img { display:block; margin-top:5px; border-radius:5px; }
-    </style>
+<meta charset="UTF-8">
+<title>Топ видео Roblox</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        background: #f9f9f9;
+        color: #333;
+    }
+    h1 {
+        font-size: 24px;
+        margin-bottom: 20px;
+    }
+    ul { 
+        list-style: none; 
+        padding: 0; 
+        line-height: 1.6;
+    }
+    li {
+        background: #fff;
+        margin-bottom: 15px;
+        padding: 10px;
+        border-radius: 6px;
+        box-shadow: 0 0 6px rgba(0,0,0,0.1);
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    li img {
+        width: 160px;
+        height: auto;
+        border-radius: 5px;
+        flex-shrink: 0;
+    }
+    li .info {
+        flex-grow: 1;
+    }
+    li .place {
+        font-weight: bold;
+        font-size: 18px;
+        width: 30px;
+    }
+    a {
+        color: #06f;
+        text-decoration: none;
+        font-weight: bold;
+    }
+    a:hover {
+        text-decoration: underline;
+    }
+    pre {
+        background: #222;
+        color: #0f0;
+        padding: 10px;
+        overflow-x: auto;
+        margin-top: 30px;
+        border-radius: 5px;
+    }
+    button {
+        padding: 8px 15px;
+        font-size: 16px;
+        cursor: pointer;
+        border-radius: 5px;
+        border: none;
+        background-color: #ff4500;
+        color: white;
+        margin-bottom: 20px;
+    }
+    button:hover {
+        background-color: #e03e00;
+    }
+</style>
 </head>
 <body>
 
-<h1>🔥 Тренды Roblox (YouTube RU)</h1>
+<h1>🔥 Топ видео Roblox каналов (YouTube RU)</h1>
 
 <button id="loadBtn">Загрузить тренды</button>
 
+<ul id="topList"></ul>
+
 <h2>📊 Дебаг</h2>
 <pre id="debug"></pre>
-
-<h2>🏆 Топ видео Роблокс каналов</h2>
-<ul id="topList"></ul>
 
 <script>
 document.getElementById('loadBtn').addEventListener('click', async () => {
@@ -48,29 +100,22 @@ document.getElementById('loadBtn').addEventListener('click', async () => {
         // Дебаг
         debugEl.textContent = (data.debug || []).join("\n");
 
-        // Проверка
         if (!data.top || data.top.length === 0) {
             topEl.innerHTML = "<li>❌ Ничего не найдено</li>";
             return;
         }
 
-        // Вывод топа
         data.top.forEach((v, index) => {
             const li = document.createElement('li');
 
-            if (index < 5) {
-                // Первые 5 видео с превью
-                li.innerHTML = `
-                    <a href="${v.url}" target="_blank" style="font-weight:bold;">${v.title}</a><br>
-                    👁 ${v.views} | ⏱ ${v.hours.toFixed(1)}ч | ⚡ ${Math.round(v.speed)} /час<br>
-                    <img src="${v.thumbnail}" alt="Превью" width="320">
-                `;
-            } else {
-                // Остальные просто списком
-                li.innerHTML = `
-                    <a href="${v.url}" target="_blank">${v.title}</a> — 👁 ${v.views} | ⏱ ${v.hours.toFixed(1)}ч | ⚡ ${Math.round(v.speed)} /час
-                `;
-            }
+            li.innerHTML = `
+                <div class="place">${index + 1}.</div>
+                <img src="${v.thumbnail}" alt="Превью">
+                <div class="info">
+                    <a href="${v.url}" target="_blank">${v.title}</a><br>
+                    👁 ${v.views} | ⏱ ${v.hours.toFixed(1)}ч | ⚡ ${Math.round(v.speed)} /час
+                </div>
+            `;
 
             topEl.appendChild(li);
         });
