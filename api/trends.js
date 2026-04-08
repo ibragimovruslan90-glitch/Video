@@ -1,107 +1,74 @@
 export default async function handler(req, res) {
     const API_KEY = process.env.YOUTUBE_API_KEY;
 
-    // Параметр для поиска видео за последние 2 дня
-    const publishedAfter = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString();
-
-    const queries = [
-        "роблокс новые карты",
-        "роблокс симулятор",
-        "roblox trending maps",
-        "роблокс хоррор"
+    // 🔥 ВСТАВЬ СЮДА ID КАНАЛОВ
+    const channels = [
+        "UCxxxxxxxxxxxx1",
+        "UCxxxxxxxxxxxx2",
+        "UCxxxxxxxxxxxx3"
     ];
 
-    // Расширенный список стоп-слов (мусорные слова из заголовков)
-    const stopWords = new Set([
-        "я","в","на","и","с","это","как","все","меня",
-        "roblox","роблокс","игра","карта","игры","стрим",
-        "прохождение", "обнова", "обновление", "код", "коды",
-        "чит", "читы", "взломал", "купил", "чек", "топ"
-    ]);
-
-    function extractCandidates(title) {
-        return title
-            .toLowerCase()
-            .replace(/[^\w\sа-яА-ЯЁё]/g, " ") // Заменяем символы на пробелы
-            .split(/\s+/)
-            .filter(w => 
-                w.length > 3 && // Ищем слова длиннее 3 символов
-                !stopWords.has(w) && 
-                !/^\d+$/.test(w) // Игнорируем просто числа
-            );
-    }
+    const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
     let allVideos = [];
     let debug = [];
 
     try {
-        for (let q of queries) {
-            // Используем relevance вместо date для поиска хайповых видео
-            const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(q)}&maxResults=15&type=video&order=relevance&publishedAfter=${publishedAfter}&regionCode=RU&key=${API_KEY}`;
-            
-            const search = await fetch(url);
+        for (let channelId of channels) {
+
+            // Получаем последние видео канала
+            const search = await fetch(
+                `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${channelId}&maxResults=15&order=date&type=video&key=${API_KEY}`
+            );
+
             const data = await search.json();
 
-            if (data.error) {
-                debug.push(`Ошибка API: ${data.error.message}`);
-                continue;
-            }
+            if (!data.items) continue;
 
-            const ids = data.items?.map(i => i.id.videoId).join(",");
-            if (!ids) continue;
+            const ids = data.items.map(i => i.id.videoId).join(",");
 
-            const statsResponse = await fetch(
+            const statsRes = await fetch(
                 `https://www.googleapis.com/youtube/v3/videos?part=statistics,snippet&id=${ids}&key=${API_KEY}`
             );
-            const statsData = await statsResponse.json();
+
+            const statsData = await statsRes.json();
 
             statsData.items?.forEach(v => {
+                const published = new Date(v.snippet.publishedAt);
+
+                // фильтр по 7 дням
+                if (published < weekAgo) return;
+
+                const title = v.snippet.title.toLowerCase();
+
+                // фильтр по Roblox
+                if (!title.includes("roblox") && !title.includes("роблокс")) return;
+
+                const views = parseInt(v.statistics.viewCount || 0);
+                const hours = (Date.now() - published) / 3600000;
+
+                const speed = views / Math.max(hours, 1);
+
                 allVideos.push({
-                    id: v.id,
                     title: v.snippet.title,
-                    views: parseInt(v.statistics.viewCount || 0),
-                    publishedAt: v.snippet.publishedAt // ИСПРАВЛЕНО: v.snippet.publishedAt
+                    views,
+                    hours,
+                    speed,
+                    url: `https://youtube.com/watch?v=${v.id}`
                 });
             });
         }
 
-        const mapNames = {};
-        allVideos.forEach(v => {
-            const hours = (Date.now() - new Date(v.publishedAt)) / 3600000;
-            const score = v.views / Math.max(hours, 1); // Оценка: просмотры в час
+        // сортировка по скорости
+        const top = allVideos
+            .sort((a, b) => b.speed - a.speed)
+            .slice(0, 10);
 
-            const words = extractCandidates(v.title);
-            words.forEach(word => {
-                if (!mapNames[word]) mapNames[word] = { score: 0, count: 0, examples: [] };
-                mapNames[word].score += score;
-                mapNames[word].count += 1;
-                if (mapNames[word].examples.length < 2) {
-                    mapNames[word].examples.push(v.title);
-                }
-            });
+        res.status(200).json({
+            success: true,
+            count: allVideos.length,
+            top
         });
-
-        // Сортируем по весу и берем топ-10
-        const top = Object.entries(mapNames)
-            .filter(([_, info]) => info.count > 1) // Слово должно встретиться минимум в 2 заголовках
-            .sort((a, b) => b[1].score - a[1].score)
-            .slice(0, 10)
-            .map(([name, info]) => ({
-                name,
-                popularityScore: Math.round(info.score),
-                mentions: info.count,
-                titles: info.examples
-            }));
-
-        // ... (весь предыдущий код расчетов)
-
-// В конце функции handler:
-res.status(200).json({
-    success: true,
-    debug, // Добавляем обратно для совместимости с вашим фронтендом
-    top
-});
-
 
     } catch (err) {
         res.status(500).json({ error: err.message, debug });
