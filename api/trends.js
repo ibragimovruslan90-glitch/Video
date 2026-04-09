@@ -47,7 +47,7 @@ export default async function handler(req, res) {
 
                     const views = parseInt(v.statistics.viewCount / 1000 || 0);
                     const hours = (Date.now() - published) / 3600000;
-                    const speed = views / Math.max(hours, 1);
+                    const speed = views * 1000 / Math.max(hours, 1);
 
                     allVideos.push({
                         id: v.id,
