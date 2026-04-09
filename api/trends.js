@@ -45,7 +45,7 @@ export default async function handler(req, res) {
                     // 🚫 убираем Shorts вручную
                     if (title.includes("#shorts") || title.includes("shorts")) return;
 
-                    const views = parseInt(v.statistics.viewCount || 0);
+                    const views = parseInt(v.statistics.viewCount / 1000 || 0);
                     const hours = (Date.now() - published) / 3600000;
                     const speed = views / Math.max(hours, 1);
 
