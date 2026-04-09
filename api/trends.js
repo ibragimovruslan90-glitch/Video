@@ -6,6 +6,8 @@ export default async function handler(req, res) {
         "UCHVY_-jY-FayjszyX1nlGtQ", // холибам
         "UClTYGNdQTwp2w3PhOpmVIkw", //кошка лана
     "UCUzkpCMREk2AGgZwT55JizA" //владус
+"UC2VQebBHZ0Jmh-AI2JrXkQg"// over show
+"UCNJwQAU08P3muRZkZUOvx5A" // family play tv
     ];
 
     const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
