@@ -2,8 +2,13 @@ export default async function handler(req, res) {
     const API_KEY = process.env.YOUTUBE_API_KEY;
 
     const channels = [
-        "UC6HKWohA11bBbyob7ieP-0g", // твой первый
-        "UCHVY_-jY-FayjszyX1nlGtQ"
+        "UC6HKWohA11bBbyob7ieP-0g", // квинка
+        "UCHVY_-jY-FayjszyX1nlGtQ", // холибам
+        "UC6n4D1sE8p2qxGn8pYtBX9w", //кошка лана
+    "UCkR0GY0ue02kzM0b1W3O0lw", //ffgtv
+    "UCwzS3xJzj9p0n8C2Vq2mRbw", //robzi
+    "UC5k3K0Yk4pR5r7E2Lk0wXkw", //over show
+    "UC9v0l9D0v9l3Vx0F9Xl8XzA" //владус
     ];
 
     const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
