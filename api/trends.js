@@ -1,7 +1,6 @@
 export default async function handler(req, res) {
 const API_KEY = process.env.YOUTUBE_API_KEY;
 
-```
 const channels = [
     "UC6HKWohA11bBbyob7ieP-0g", // квинка
     "UCHVY_-jY-FayjszyX1nlGtQ", // холибам
@@ -84,6 +83,6 @@ try {
 } catch (err) {
     res.status(500).json({ error: err.message });
 }
-```
+
 
 }
