@@ -37,15 +37,25 @@ button {
     border: none;
     background-color: #ff4500;
     color: white;
-    transition: background 0.2s, opacity 0.2s;
+    transition: background 0.2s;
 }
 
-button:hover { background-color: #e03e00; }
-button:disabled { opacity: 0.6; cursor: not-allowed; }
+button:hover {
+    background-color: #e03e00;
+}
 
-#youtubeBtn { background-color: #cc0000; }
-#youtubeBtn:hover { background-color: #aa0000; }
-button.active { outline: 5px solid #333; }
+button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+#youtubeBtn {
+    background-color: #cc0000;
+}
+
+#youtubeBtn:hover {
+    background-color: #aa0000;
+}
 
 ul { 
     list-style: none; 
@@ -88,12 +98,8 @@ li .title {
     flex: 1;
 }
 
-li .title:hover { text-decoration: underline; }
-
-li .channel {
-    font-size: 18px;
-    color: #888;
-    margin-bottom: 10px;
+li .title:hover {
+    text-decoration: underline;
 }
 
 li .content {
@@ -125,14 +131,18 @@ pre {
     margin-top: 30px;
     border-radius: 8px;
     font-size: 16px;
-    white-space: pre-wrap;
-    word-break: break-all;
 }
 
 @media (max-width: 600px) {
-    .btn-row { flex-direction: column; }
-    li .content { flex-direction: column; }
-    li img { width: 100%; }
+    .btn-row {
+        flex-direction: column;
+    }
+    li .content {
+        flex-direction: column;
+    }
+    li img {
+        width: 100%;
+    }
     li .metrics {
         flex-direction: row;
         justify-content: space-between;
@@ -145,92 +155,45 @@ pre {
 </head>
 <body>
 
-<h1>🔥 Топ видео YouTube RU</h1>
+<h1>Топ видео YouTube RU</h1>
 
 <div class="btn-row">
-    <button id="robloxBtn">🟥 Roblox каналы</button>
-    <button id="youtubeBtn">▶️ YouTube тренды</button>
+    <button id="robloxBtn">Roblox каналы</button>
+    <button id="youtubeBtn">YouTube тренды</button>
 </div>
 
 <ul id="topList"></ul>
 
-<h2>📊 Дебаг</h2>
-<pre id="debug">—</pre>
+<h2>Дебаг</h2>
+<pre id="debug"></pre>
 
 <script>
-    function fmtDur(sec) {
-        const h = Math.floor(sec / 3600);
-        const m = Math.floor((sec % 3600) / 60);
-        const s = sec % 60;
-        if (h > 0) return `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-        return `${m}:${String(s).padStart(2,'0')}`;
-    }
+async function loadTrends(apiPath) {
+    const debugEl = document.getElementById('debug');
+    const topEl = document.getElementById('topList');
 
-    async function loadTrends(mode) {
-        const debugEl = document.getElementById('debug');
-        const topEl = document.getElementById('topList');
-        const robloxBtn = document.getElementById('robloxBtn');
-        const youtubeBtn = document.getElementById('youtubeBtn');
+    debugEl.textContent = "Загрузка...";
+    topEl.innerHTML = "";
 
-        robloxBtn.disabled = true;
-        youtubeBtn.disabled = true;
-        robloxBtn.classList.toggle('active', mode === 'roblox');
-        youtubeBtn.classList.toggle('active', mode === 'youtube');
+    try {
+        const res = await fetch(apiPath);
+        const data = await res.json();
 
-        debugEl.textContent = "Загрузка...";
-        topEl.innerHTML = "";
-
-        let res;
-        try {
-            res = await fetch(`/api/trends?mode=${mode}`);
-        } catch (fetchErr) {
-            debugEl.textContent = `❌ fetch() провалился:\n${fetchErr}\n\nСкорее всего сервер недоступен или неправильный URL.`;
-            robloxBtn.disabled = false;
-            youtubeBtn.disabled = false;
-            return;
-        }
-
-        // Читаем сырой текст — чтобы видеть что реально вернул сервер
-        const rawText = await res.text();
-        debugEl.textContent = `HTTP ${res.status} ${res.statusText}\n\n${rawText.slice(0, 2000)}`;
-
-        let data;
-        try {
-            data = JSON.parse(rawText);
-        } catch (jsonErr) {
-            topEl.innerHTML = `<li>❌ Сервер вернул не JSON (см. дебаг выше)</li>`;
-            robloxBtn.disabled = false;
-            youtubeBtn.disabled = false;
-            return;
-        }
-
-        if (data.error) {
-            topEl.innerHTML = `<li>❌ Ошибка API: ${data.error}</li>`;
-            robloxBtn.disabled = false;
-            youtubeBtn.disabled = false;
-            return;
-        }
+        debugEl.textContent = (data.debug || []).join("\n");
 
         if (!data.top || data.top.length === 0) {
-            topEl.innerHTML = "<li>❌ Ничего не найдено</li>";
-            robloxBtn.disabled = false;
-            youtubeBtn.disabled = false;
+            topEl.innerHTML = "<li>Ничего не найдено</li>";
             return;
         }
 
         data.top.forEach((v, index) => {
             const li = document.createElement('li');
 
-            const extra = mode === 'youtube'
-                ? `<div class="channel">📺 ${v.channel}${v.durationSec ? ' · 🎬 ' + fmtDur(v.durationSec) : ''}</div>`
-                : '';
-
             li.innerHTML = `
                 <div class="title-row">
                     <div class="place">${index + 1}.</div>
                     <a class="title" href="${v.url}" target="_blank">${v.title}</a>
                 </div>
-                ${extra}
                 <div class="content">
                     <img src="${v.thumbnail}" alt="Превью">
                     <div class="metrics">
@@ -240,15 +203,22 @@ pre {
                     </div>
                 </div>
             `;
+
             topEl.appendChild(li);
         });
 
-        robloxBtn.disabled = false;
-        youtubeBtn.disabled = false;
+    } catch (err) {
+        debugEl.textContent = "Ошибка:\n" + err;
     }
+}
 
-    document.getElementById('robloxBtn').addEventListener('click', () => loadTrends('roblox'));
-    document.getElementById('youtubeBtn').addEventListener('click', () => loadTrends('youtube'));
+document.getElementById('robloxBtn').addEventListener('click', function() {
+    loadTrends('/api/trends');
+});
+
+document.getElementById('youtubeBtn').addEventListener('click', function() {
+    loadTrends('/api/youtube');
+});
 </script>
 
 </body>
