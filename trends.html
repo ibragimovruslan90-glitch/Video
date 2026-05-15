@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
@@ -8,156 +9,138 @@
         box-sizing: border-box;
     }
 
-    body {
-        font-family: Arial, sans-serif;
-        margin: 10px;
-        background: #f9f9f9;
-        color: #333;
-    }
+```
+body {
+    font-family: Arial, sans-serif;
+    margin: 10px;
+    background: #f9f9f9;
+    color: #333;
+}
 
-    h1 {
-        font-size: 48px;
-        margin-bottom: 20px;
-    }
+h1 {
+    font-size: 48px;
+    margin-bottom: 20px;
+}
 
-    .btn-row {
-        display: flex;
-        gap: 12px;
-        margin-bottom: 25px;
-    }
+.btn-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 25px;
+}
 
-    button {
-        flex: 1;
-        padding: 40px;
-        font-size: 30px;
-        cursor: pointer;
-        border-radius: 12px;
-        border: none;
-        background-color: #ff4500;
-        color: white;
-        transition: background 0.2s, opacity 0.2s;
-    }
+button {
+    flex: 1;
+    padding: 40px;
+    font-size: 30px;
+    cursor: pointer;
+    border-radius: 12px;
+    border: none;
+    background-color: #ff4500;
+    color: white;
+    transition: background 0.2s, opacity 0.2s;
+}
 
-    button:hover {
-        background-color: #e03e00;
-    }
+button:hover { background-color: #e03e00; }
+button:disabled { opacity: 0.6; cursor: not-allowed; }
 
-    button:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-    }
+#youtubeBtn { background-color: #cc0000; }
+#youtubeBtn:hover { background-color: #aa0000; }
+button.active { outline: 5px solid #333; }
 
-    #youtubeBtn {
-        background-color: #cc0000;
-    }
+ul { 
+    list-style: none; 
+    padding: 0; 
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+}
 
-    #youtubeBtn:hover {
-        background-color: #aa0000;
-    }
+li {
+    background: #fff;
+    padding: 16px;
+    border-radius: 12px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.15);
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
 
-    /* Активная кнопка — подсвечена рамкой */
-    button.active {
-        outline: 5px solid #333;
-    }
+li .title-row {
+    display: flex;
+    align-items: center;
+    font-size: 22px;
+    margin-bottom: 12px;
+    gap: 12px;
+}
 
-    ul { 
-        list-style: none; 
-        padding: 0; 
-        margin: 0;
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-        width: 100%;
-    }
+li .place {
+    font-weight: bold;
+    font-size: 26px;
+    flex-shrink: 0;
+}
 
-    li {
-        background: #fff;
-        padding: 16px;
-        border-radius: 12px;
-        box-shadow: 0 0 10px rgba(0,0,0,0.15);
-        display: flex;
-        flex-direction: column;
-        width: 100%;
-    }
+li .title {
+    font-weight: bold;
+    color: #06f;
+    text-decoration: none;
+    flex: 1;
+}
 
-    li .title-row {
-        display: flex;
-        align-items: center;
-        font-size: 22px;
-        margin-bottom: 12px;
-        gap: 12px;
-    }
+li .title:hover { text-decoration: underline; }
 
-    li .place {
-        font-weight: bold;
-        font-size: 26px;
-        flex-shrink: 0;
-    }
+li .channel {
+    font-size: 18px;
+    color: #888;
+    margin-bottom: 10px;
+}
 
-    li .title {
-        font-weight: bold;
-        color: #06f;
-        text-decoration: none;
-        flex: 1;
-    }
+li .content {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
 
-    li .title:hover {
-        text-decoration: underline;
-    }
+li img {
+    width: 600px;
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    flex-shrink: 0;
+}
 
-    li .channel {
-        font-size: 18px;
-        color: #888;
-        margin-bottom: 10px;
-    }
+li .metrics {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    font-size: 40px;
+}
 
-    li .content {
-        display: flex;
-        gap: 15px;
-        flex-wrap: wrap;
-    }
+pre {
+    background: #222;
+    color: #0f0;
+    padding: 12px;
+    overflow-x: auto;
+    margin-top: 30px;
+    border-radius: 8px;
+    font-size: 16px;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
 
-    li img {
-        width: 600px;
-        max-width: 100%;
-        height: auto;
-        border-radius: 8px;
-        flex-shrink: 0;
-    }
-
+@media (max-width: 600px) {
+    .btn-row { flex-direction: column; }
+    li .content { flex-direction: column; }
+    li img { width: 100%; }
     li .metrics {
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-start;
-        font-size: 40px;
+        flex-direction: row;
+        justify-content: space-between;
+        margin-top: 8px;
     }
+}
+```
 
-    pre {
-        background: #222;
-        color: #0f0;
-        padding: 12px;
-        overflow-x: auto;
-        margin-top: 30px;
-        border-radius: 8px;
-        font-size: 16px;
-    }
-
-    @media (max-width: 600px) {
-        .btn-row {
-            flex-direction: column;
-        }
-        li .content {
-            flex-direction: column;
-        }
-        li img {
-            width: 100%;
-        }
-        li .metrics {
-            flex-direction: row;
-            justify-content: space-between;
-            margin-top: 8px;
-        }
-    }
 </style>
 </head>
 <body>
@@ -172,7 +155,7 @@
 <ul id="topList"></ul>
 
 <h2>📊 Дебаг</h2>
-<pre id="debug"></pre>
+<pre id="debug">—</pre>
 
 <script>
     function fmtDur(sec) {
@@ -189,7 +172,6 @@
         const robloxBtn = document.getElementById('robloxBtn');
         const youtubeBtn = document.getElementById('youtubeBtn');
 
-        // Состояние кнопок
         robloxBtn.disabled = true;
         youtubeBtn.disabled = true;
         robloxBtn.classList.toggle('active', mode === 'roblox');
@@ -198,55 +180,71 @@
         debugEl.textContent = "Загрузка...";
         topEl.innerHTML = "";
 
+        let res;
         try {
-            const res = await fetch(`/api/trends?mode=${mode}`);
-            const data = await res.json();
-
-            debugEl.textContent = (data.debug || []).join("\n");
-
-            if (data.error) {
-                topEl.innerHTML = `<li>❌ Ошибка: ${data.error}</li>`;
-                return;
-            }
-
-            if (!data.top || data.top.length === 0) {
-                topEl.innerHTML = "<li>❌ Ничего не найдено</li>";
-                return;
-            }
-
-            data.top.forEach((v, index) => {
-                const li = document.createElement('li');
-
-                // Для YouTube-режима показываем канал и длину
-                const extra = mode === 'youtube'
-                    ? `<div class="channel">📺 ${v.channel}${v.durationSec ? ' · 🎬 ' + fmtDur(v.durationSec) : ''}</div>`
-                    : '';
-
-                li.innerHTML = `
-                    <div class="title-row">
-                        <div class="place">${index + 1}.</div>
-                        <a class="title" href="${v.url}" target="_blank">${v.title}</a>
-                    </div>
-                    ${extra}
-                    <div class="content">
-                        <img src="${v.thumbnail}" alt="Превью">
-                        <div class="metrics">
-                            ⚡ ${Math.round(v.speed)} /час<br>
-                            👁 ${v.views} тыс.<br>
-                            ⏱ ${v.hours.toFixed(1)}ч
-                        </div>
-                    </div>
-                `;
-
-                topEl.appendChild(li);
-            });
-
-        } catch (err) {
-            debugEl.textContent = "Ошибка:\n" + err;
-        } finally {
+            res = await fetch(`/api/trends?mode=${mode}`);
+        } catch (fetchErr) {
+            debugEl.textContent = `❌ fetch() провалился:\n${fetchErr}\n\nСкорее всего сервер недоступен или неправильный URL.`;
             robloxBtn.disabled = false;
             youtubeBtn.disabled = false;
+            return;
         }
+
+        // Читаем сырой текст — чтобы видеть что реально вернул сервер
+        const rawText = await res.text();
+        debugEl.textContent = `HTTP ${res.status} ${res.statusText}\n\n${rawText.slice(0, 2000)}`;
+
+        let data;
+        try {
+            data = JSON.parse(rawText);
+        } catch (jsonErr) {
+            topEl.innerHTML = `<li>❌ Сервер вернул не JSON (см. дебаг выше)</li>`;
+            robloxBtn.disabled = false;
+            youtubeBtn.disabled = false;
+            return;
+        }
+
+        if (data.error) {
+            topEl.innerHTML = `<li>❌ Ошибка API: ${data.error}</li>`;
+            robloxBtn.disabled = false;
+            youtubeBtn.disabled = false;
+            return;
+        }
+
+        if (!data.top || data.top.length === 0) {
+            topEl.innerHTML = "<li>❌ Ничего не найдено</li>";
+            robloxBtn.disabled = false;
+            youtubeBtn.disabled = false;
+            return;
+        }
+
+        data.top.forEach((v, index) => {
+            const li = document.createElement('li');
+
+            const extra = mode === 'youtube'
+                ? `<div class="channel">📺 ${v.channel}${v.durationSec ? ' · 🎬 ' + fmtDur(v.durationSec) : ''}</div>`
+                : '';
+
+            li.innerHTML = `
+                <div class="title-row">
+                    <div class="place">${index + 1}.</div>
+                    <a class="title" href="${v.url}" target="_blank">${v.title}</a>
+                </div>
+                ${extra}
+                <div class="content">
+                    <img src="${v.thumbnail}" alt="Превью">
+                    <div class="metrics">
+                        ⚡ ${Math.round(v.speed)} /час<br>
+                        👁 ${v.views} тыс.<br>
+                        ⏱ ${v.hours.toFixed(1)}ч
+                    </div>
+                </div>
+            `;
+            topEl.appendChild(li);
+        });
+
+        robloxBtn.disabled = false;
+        youtubeBtn.disabled = false;
     }
 
     document.getElementById('robloxBtn').addEventListener('click', () => loadTrends('roblox'));
