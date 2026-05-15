@@ -7,8 +7,6 @@ const channels = [
     "UCHVY_-jY-FayjszyX1nlGtQ", // холибам
     "UClTYGNdQTwp2w3PhOpmVIkw", //кошка лана
 "UCUzkpCMREk2AGgZwT55JizA", //владус
-
-
 “UC2VQebBHZ0Jmh-AI2JrXkQg”, // over show
 “UCNJwQAU08P3muRZkZUOvx5A” // family play tv
 ];
