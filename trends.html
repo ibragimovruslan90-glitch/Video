@@ -9,7 +9,7 @@
         box-sizing: border-box;
     }
 
-```
+
 body {
     font-family: Arial, sans-serif;
     margin: 10px;
@@ -40,26 +40,16 @@ button {
     transition: background 0.2s;
 }
 
-button:hover {
-    background-color: #e03e00;
-}
+button:hover { background-color: #e03e00; }
+button:disabled { opacity: 0.6; cursor: not-allowed; }
 
-button:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
+#youtubeBtn { background-color: #cc0000; }
+#youtubeBtn:hover { background-color: #aa0000; }
 
-#youtubeBtn {
-    background-color: #cc0000;
-}
-
-#youtubeBtn:hover {
-    background-color: #aa0000;
-}
-
-ul { 
-    list-style: none; 
-    padding: 0; 
+/* Карточки видео (Roblox) */
+ul {
+    list-style: none;
+    padding: 0;
     margin: 0;
     display: flex;
     flex-direction: column;
@@ -98,9 +88,7 @@ li .title {
     flex: 1;
 }
 
-li .title:hover {
-    text-decoration: underline;
-}
+li .title:hover { text-decoration: underline; }
 
 li .content {
     display: flex;
@@ -123,6 +111,63 @@ li .metrics {
     font-size: 40px;
 }
 
+/* Карточки тем (YouTube тренды) */
+.themes {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.theme-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.15);
+    padding: 20px;
+    border-left: 8px solid #cc0000;
+}
+
+.theme-num {
+    font-size: 18px;
+    color: #cc0000;
+    font-weight: bold;
+    margin-bottom: 4px;
+}
+
+.theme-topic {
+    font-size: 32px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.theme-reason {
+    font-size: 20px;
+    color: #555;
+    margin-bottom: 14px;
+    line-height: 1.4;
+}
+
+.theme-keywords {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.keyword {
+    background: #fff0f0;
+    border: 2px solid #cc0000;
+    color: #cc0000;
+    border-radius: 20px;
+    padding: 6px 16px;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.video-count {
+    font-size: 16px;
+    color: #999;
+    margin-bottom: 16px;
+}
+
 pre {
     background: #222;
     color: #0f0;
@@ -131,23 +176,21 @@ pre {
     margin-top: 30px;
     border-radius: 8px;
     font-size: 16px;
+    white-space: pre-wrap;
+    word-break: break-all;
 }
 
 @media (max-width: 600px) {
-    .btn-row {
-        flex-direction: column;
-    }
-    li .content {
-        flex-direction: column;
-    }
-    li img {
-        width: 100%;
-    }
+    .btn-row { flex-direction: column; }
+    li .content { flex-direction: column; }
+    li img { width: 100%; }
     li .metrics {
         flex-direction: row;
         justify-content: space-between;
         margin-top: 8px;
     }
+    .theme-topic { font-size: 24px; }
+    .keyword { font-size: 16px; }
 }
 ```
 
@@ -155,69 +198,93 @@ pre {
 </head>
 <body>
 
-<h1>Топ видео YouTube RU</h1>
+<h1>Топ YouTube RU</h1>
 
 <div class="btn-row">
     <button id="robloxBtn">Roblox каналы</button>
     <button id="youtubeBtn">YouTube тренды</button>
 </div>
 
-<ul id="topList"></ul>
+<div id="result"></div>
 
 <h2>Дебаг</h2>
-<pre id="debug"></pre>
+<pre id="debug">—</pre>
 
 <script>
-async function loadTrends(apiPath) {
+function renderRoblox(data) {
+    if (!data.top || data.top.length === 0) {
+        return "<p>Ничего не найдено</p>";
+    }
+    const items = data.top.map((v, index) => `
+        <li>
+            <div class="title-row">
+                <div class="place">${index + 1}.</div>
+                <a class="title" href="${v.url}" target="_blank">${v.title}</a>
+            </div>
+            <div class="content">
+                <img src="${v.thumbnail}" alt="Превью">
+                <div class="metrics">
+                    ⚡ ${Math.round(v.speed)} /час<br>
+                    👁 ${v.views} тыс.<br>
+                    ⏱ ${v.hours.toFixed(1)}ч
+                </div>
+            </div>
+        </li>
+    `).join("");
+    return "<ul>" + items + "</ul>";
+}
+
+function renderYoutube(data) {
+    if (!data.themes || data.themes.length === 0) {
+        return "<p>Темы не найдены</p>";
+    }
+    const cards = data.themes.map((t, i) => {
+        const keywords = (t.keywords || []).map(k => `<span class="keyword">${k}</span>`).join("");
+        return `
+            <div class="theme-card">
+                <div class="theme-num">Тренд #${i + 1}</div>
+                <div class="theme-topic">${t.topic}</div>
+                <div class="theme-reason">${t.reason}</div>
+                <div class="theme-keywords">${keywords}</div>
+            </div>
+        `;
+    }).join("");
+    return `<div class="video-count">Проанализировано ${data.videoCount} трендовых видео</div><div class="themes">${cards}</div>`;
+}
+
+async function loadTrends(apiPath, mode) {
     const debugEl = document.getElementById('debug');
-    const topEl = document.getElementById('topList');
+    const resultEl = document.getElementById('result');
 
     debugEl.textContent = "Загрузка...";
-    topEl.innerHTML = "";
+    resultEl.innerHTML = "<p>Загрузка...</p>";
 
+    const res = await fetch(apiPath);
+    const rawText = await res.text();
+    debugEl.textContent = "HTTP " + res.status + "\n\n" + rawText.slice(0, 3000);
+
+    let data;
     try {
-        const res = await fetch(apiPath);
-        const data = await res.json();
-
-        debugEl.textContent = (data.debug || []).join("\n");
-
-        if (!data.top || data.top.length === 0) {
-            topEl.innerHTML = "<li>Ничего не найдено</li>";
-            return;
-        }
-
-        data.top.forEach((v, index) => {
-            const li = document.createElement('li');
-
-            li.innerHTML = `
-                <div class="title-row">
-                    <div class="place">${index + 1}.</div>
-                    <a class="title" href="${v.url}" target="_blank">${v.title}</a>
-                </div>
-                <div class="content">
-                    <img src="${v.thumbnail}" alt="Превью">
-                    <div class="metrics">
-                        ⚡ ${Math.round(v.speed)} /час<br>
-                        👁 ${v.views} тыс.<br>
-                        ⏱ ${v.hours.toFixed(1)}ч
-                    </div>
-                </div>
-            `;
-
-            topEl.appendChild(li);
-        });
-
-    } catch (err) {
-        debugEl.textContent = "Ошибка:\n" + err;
+        data = JSON.parse(rawText);
+    } catch (e) {
+        resultEl.innerHTML = "<p>Сервер вернул не JSON — смотри дебаг</p>";
+        return;
     }
+
+    if (data.error) {
+        resultEl.innerHTML = "<p>Ошибка: " + data.error + "</p>";
+        return;
+    }
+
+    resultEl.innerHTML = mode === "youtube" ? renderYoutube(data) : renderRoblox(data);
 }
 
 document.getElementById('robloxBtn').addEventListener('click', function() {
-    loadTrends('/api/trends');
+    loadTrends('/api/trends', 'roblox');
 });
 
 document.getElementById('youtubeBtn').addEventListener('click', function() {
-    loadTrends('/api/youtube');
+    loadTrends('/api/youtube', 'youtube');
 });
 </script>
 
