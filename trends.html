@@ -16,24 +16,48 @@
     }
 
     h1 {
-        font-size: 48px; /* в два раза больше */
+        font-size: 48px;
         margin-bottom: 20px;
     }
 
+    .btn-row {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 25px;
+    }
+
     button {
-        width: 100%;
-        padding: 40px; /* увеличено */
-        font-size: 40px; /* в два раза больше */
+        flex: 1;
+        padding: 40px;
+        font-size: 30px;
         cursor: pointer;
         border-radius: 12px;
         border: none;
         background-color: #ff4500;
         color: white;
-        margin-bottom: 25px;
+        transition: background 0.2s, opacity 0.2s;
     }
 
     button:hover {
         background-color: #e03e00;
+    }
+
+    button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    #youtubeBtn {
+        background-color: #cc0000;
+    }
+
+    #youtubeBtn:hover {
+        background-color: #aa0000;
+    }
+
+    /* Активная кнопка — подсвечена рамкой */
+    button.active {
+        outline: 5px solid #333;
     }
 
     ul { 
@@ -81,6 +105,12 @@
         text-decoration: underline;
     }
 
+    li .channel {
+        font-size: 18px;
+        color: #888;
+        margin-bottom: 10px;
+    }
+
     li .content {
         display: flex;
         gap: 15px;
@@ -88,7 +118,7 @@
     }
 
     li img {
-        width: 600px; /* ещё больше */
+        width: 600px;
         max-width: 100%;
         height: auto;
         border-radius: 8px;
@@ -112,13 +142,15 @@
         font-size: 16px;
     }
 
-    /* Адаптация под смартфоны */
     @media (max-width: 600px) {
+        .btn-row {
+            flex-direction: column;
+        }
         li .content {
             flex-direction: column;
         }
         li img {
-            width: 100%; /* превью на всю ширину */
+            width: 100%;
         }
         li .metrics {
             flex-direction: row;
@@ -130,9 +162,12 @@
 </head>
 <body>
 
-<h1>🔥 Топ видео Roblox каналов (YouTube RU)</h1>
+<h1>🔥 Топ видео YouTube RU</h1>
 
-<button id="loadBtn">Загрузить тренды</button>
+<div class="btn-row">
+    <button id="robloxBtn">🟥 Roblox каналы</button>
+    <button id="youtubeBtn">▶️ YouTube тренды</button>
+</div>
 
 <ul id="topList"></ul>
 
@@ -140,50 +175,82 @@
 <pre id="debug"></pre>
 
 <script>
-document.getElementById('loadBtn').addEventListener('click', async () => {
-    const debugEl = document.getElementById('debug');
-    const topEl = document.getElementById('topList');
-
-    debugEl.textContent = "Загрузка...";
-    topEl.innerHTML = "";
-
-    try {
-        const res = await fetch('/api/trends');
-        const data = await res.json();
-
-        // Дебаг
-        debugEl.textContent = (data.debug || []).join("\n");
-
-        if (!data.top || data.top.length === 0) {
-            topEl.innerHTML = "<li>❌ Ничего не найдено</li>";
-            return;
-        }
-
-        data.top.forEach((v, index) => {
-            const li = document.createElement('li');
-
-            li.innerHTML = `
-                <div class="title-row">
-                    <div class="place">${index + 1}.</div>
-                    <a class="title" href="${v.url}" target="_blank">${v.title}</a>
-                </div>
-                <div class="content">
-                    <img src="${v.thumbnail}" alt="Превью">
-                    <div class="metrics">
-                        ⚡ ${Math.round(v.speed)} /час<br>
-                        👁 ${v.views} тыс.<br>
-                        ⏱ ${v.hours.toFixed(1)}ч
-                    </div>
-                </div>
-            `;
-
-            topEl.appendChild(li);
-        });
-
-    } catch (err) {
-        debugEl.textContent = "Ошибка:\n" + err;
+    function fmtDur(sec) {
+        const h = Math.floor(sec / 3600);
+        const m = Math.floor((sec % 3600) / 60);
+        const s = sec % 60;
+        if (h > 0) return `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+        return `${m}:${String(s).padStart(2,'0')}`;
     }
-});
+
+    async function loadTrends(mode) {
+        const debugEl = document.getElementById('debug');
+        const topEl = document.getElementById('topList');
+        const robloxBtn = document.getElementById('robloxBtn');
+        const youtubeBtn = document.getElementById('youtubeBtn');
+
+        // Состояние кнопок
+        robloxBtn.disabled = true;
+        youtubeBtn.disabled = true;
+        robloxBtn.classList.toggle('active', mode === 'roblox');
+        youtubeBtn.classList.toggle('active', mode === 'youtube');
+
+        debugEl.textContent = "Загрузка...";
+        topEl.innerHTML = "";
+
+        try {
+            const res = await fetch(`/api/trends?mode=${mode}`);
+            const data = await res.json();
+
+            debugEl.textContent = (data.debug || []).join("\n");
+
+            if (data.error) {
+                topEl.innerHTML = `<li>❌ Ошибка: ${data.error}</li>`;
+                return;
+            }
+
+            if (!data.top || data.top.length === 0) {
+                topEl.innerHTML = "<li>❌ Ничего не найдено</li>";
+                return;
+            }
+
+            data.top.forEach((v, index) => {
+                const li = document.createElement('li');
+
+                // Для YouTube-режима показываем канал и длину
+                const extra = mode === 'youtube'
+                    ? `<div class="channel">📺 ${v.channel}${v.durationSec ? ' · 🎬 ' + fmtDur(v.durationSec) : ''}</div>`
+                    : '';
+
+                li.innerHTML = `
+                    <div class="title-row">
+                        <div class="place">${index + 1}.</div>
+                        <a class="title" href="${v.url}" target="_blank">${v.title}</a>
+                    </div>
+                    ${extra}
+                    <div class="content">
+                        <img src="${v.thumbnail}" alt="Превью">
+                        <div class="metrics">
+                            ⚡ ${Math.round(v.speed)} /час<br>
+                            👁 ${v.views} тыс.<br>
+                            ⏱ ${v.hours.toFixed(1)}ч
+                        </div>
+                    </div>
+                `;
+
+                topEl.appendChild(li);
+            });
+
+        } catch (err) {
+            debugEl.textContent = "Ошибка:\n" + err;
+        } finally {
+            robloxBtn.disabled = false;
+            youtubeBtn.disabled = false;
+        }
+    }
+
+    document.getElementById('robloxBtn').addEventListener('click', () => loadTrends('roblox'));
+    document.getElementById('youtubeBtn').addEventListener('click', () => loadTrends('youtube'));
 </script>
 
 </body>
