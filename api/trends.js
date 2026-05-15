@@ -9,36 +9,40 @@ const mode = req.query.mode || “roblox”;
 if (mode === "youtube") {
     const debug = [];
     try {
-        const url = new URL("https://www.googleapis.com/youtube/v3/videos");
-        url.searchParams.set("part", "snippet,statistics,contentDetails");
-        url.searchParams.set("chart", "mostPopular");
-        url.searchParams.set("regionCode", "RU");
-        url.searchParams.set("relevanceLanguage", "ru");
-        url.searchParams.set("maxResults", "20");
-        url.searchParams.set("key", API_KEY);
+        if (!API_KEY) {
+            return res.status(500).json({ error: "YOUTUBE_API_KEY не задан в переменных окружения Vercel", debug });
+        }
+
+        const apiUrl = `https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics,contentDetails&chart=mostPopular&regionCode=RU&relevanceLanguage=ru&maxResults=20&key=${API_KEY}`;
 
         debug.push("Запрос YouTube трендов RU...");
-        const response = await fetch(url.toString());
+
+        const response = await fetch(apiUrl);
         const data = await response.json();
 
         if (data.error) {
+            debug.push("Ошибка YouTube API: " + JSON.stringify(data.error));
             return res.status(500).json({ error: data.error.message, debug });
         }
 
-        debug.push(`Получено: ${data.items?.length || 0} видео`);
+        debug.push(`Получено видео: ${data.items ? data.items.length : 0}`);
 
-        const videos = (data.items || []).map(v => {
+        if (!data.items || data.items.length === 0) {
+            return res.status(200).json({ top: [], debug });
+        }
+
+        const videos = data.items.map(function(v) {
             const published = new Date(v.snippet.publishedAt);
             const views = parseInt(v.statistics.viewCount || 0);
-            const hours = Math.max((Date.now() - published) / 3600000, 0.5);
+            const hours = Math.max((Date.now() - published.getTime()) / 3600000, 0.5);
             const speed = Math.round(views / hours);
 
-            // Парсим длину ISO 8601 → секунды
-            const dur = v.contentDetails?.duration || "";
+            // Парсим длину ISO 8601
+            const dur = v.contentDetails ? v.contentDetails.duration : "";
             const m = dur.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
-            const totalSec = (parseInt(m?.[1] || 0) * 3600)
-                + (parseInt(m?.[2] || 0) * 60)
-                + parseInt(m?.[3] || 0);
+            const totalSec = m
+                ? (parseInt(m[1] || 0) * 3600) + (parseInt(m[2] || 0) * 60) + parseInt(m[3] || 0)
+                : 0;
 
             return {
                 id: v.id,
@@ -46,19 +50,21 @@ if (mode === "youtube") {
                 channel: v.snippet.channelTitle,
                 views: Math.round(views / 1000),
                 hours: parseFloat(hours.toFixed(1)),
-                speed,
+                speed: speed,
                 durationSec: totalSec,
-                url: `https://youtube.com/watch?v=${v.id}`,
-                thumbnail: v.snippet.thumbnails?.medium?.url || "",
+                url: "https://youtube.com/watch?v=" + v.id,
+                thumbnail: (v.snippet.thumbnails && v.snippet.thumbnails.medium)
+                    ? v.snippet.thumbnails.medium.url : "",
             };
         });
 
-        const top = videos.sort((a, b) => b.speed - a.speed).slice(0, 10);
+        const top = videos.sort(function(a, b) { return b.speed - a.speed; }).slice(0, 10);
 
-        return res.status(200).json({ success: true, top, debug });
+        return res.status(200).json({ success: true, top: top, debug: debug });
 
     } catch (err) {
-        return res.status(500).json({ error: err.message, debug });
+        debug.push("Exception: " + err.message);
+        return res.status(500).json({ error: err.message, debug: debug });
     }
 }
 
@@ -75,56 +81,65 @@ const channels = [
 ];
 
 const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-let allVideos = [];
+var allVideos = [];
 
 try {
-    for (let channelId of channels) {
-        const durations = ["medium", "long"];
-        for (let duration of durations) {
-            const search = await fetch(
+    for (var i = 0; i < channels.length; i++) {
+        var channelId = channels[i];
+        var durations = ["medium", "long"];
+
+        for (var d = 0; d < durations.length; d++) {
+            var duration = durations[d];
+
+            var search = await fetch(
                 `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${channelId}&maxResults=15&type=video&order=date&videoDuration=${duration}&key=${API_KEY}`
             );
-            const data = await search.json();
-            if (!data.items) continue;
 
-            const ids = data.items.map(i => i.id.videoId).join(",");
+            var searchData = await search.json();
+            if (!searchData.items) continue;
+
+            var ids = searchData.items.map(function(i) { return i.id.videoId; }).join(",");
             if (!ids) continue;
 
-            const statsRes = await fetch(
+            var statsRes = await fetch(
                 `https://www.googleapis.com/youtube/v3/videos?part=statistics,snippet&id=${ids}&key=${API_KEY}`
             );
-            const statsData = await statsRes.json();
 
-            statsData.items?.forEach(v => {
-                const published = new Date(v.snippet.publishedAt);
+            var statsData = await statsRes.json();
+
+            if (!statsData.items) continue;
+
+            statsData.items.forEach(function(v) {
+                var published = new Date(v.snippet.publishedAt);
                 if (published < weekAgo) return;
 
-                const title = v.snippet.title.toLowerCase();
+                var title = v.snippet.title.toLowerCase();
                 if (title.includes("#shorts") || title.includes("shorts")) return;
 
-                const views = parseInt(v.statistics.viewCount / 1000 || 0);
-                const hours = (Date.now() - published) / 3600000;
-                const speed = views * 1000 / Math.max(hours, 1);
+                var views = parseInt(v.statistics.viewCount / 1000 || 0);
+                var hours = (Date.now() - published.getTime()) / 3600000;
+                var speed = views * 1000 / Math.max(hours, 1);
 
                 allVideos.push({
                     id: v.id,
                     title: v.snippet.title,
-                    views,
-                    hours,
-                    speed,
-                    url: `https://youtube.com/watch?v=${v.id}`,
-                    thumbnail: v.snippet.thumbnails?.medium?.url || "",
+                    views: views,
+                    hours: hours,
+                    speed: speed,
+                    url: "https://youtube.com/watch?v=" + v.id,
+                    thumbnail: (v.snippet.thumbnails && v.snippet.thumbnails.medium)
+                        ? v.snippet.thumbnails.medium.url : "",
                 });
             });
         }
     }
 
-    const unique = {};
-    allVideos.forEach(v => { unique[v.id] = v; });
-    const uniqueVideos = Object.values(unique);
-    const top = uniqueVideos.sort((a, b) => b.speed - a.speed).slice(0, 10);
+    var unique = {};
+    allVideos.forEach(function(v) { unique[v.id] = v; });
+    var uniqueVideos = Object.values(unique);
+    var top = uniqueVideos.sort(function(a, b) { return b.speed - a.speed; }).slice(0, 10);
 
-    res.status(200).json({ success: true, count: uniqueVideos.length, top });
+    res.status(200).json({ success: true, count: uniqueVideos.length, top: top });
 
 } catch (err) {
     res.status(500).json({ error: err.message });
