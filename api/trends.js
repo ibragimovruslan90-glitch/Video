@@ -2,7 +2,7 @@ export default async function handler(req, res) {
 const API_KEY = process.env.YOUTUBE_API_KEY;
 const mode = req.query.mode || “roblox”;
 
-```
+
 // ─────────────────────────────────────────────
 // РЕЖИМ: YouTube тренды RU
 // ─────────────────────────────────────────────
@@ -144,6 +144,6 @@ try {
 } catch (err) {
     res.status(500).json({ error: err.message });
 }
-```
+
 
 }
